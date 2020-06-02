@@ -22,20 +22,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.]]
 
 local timer, unpack, next = timer.Simple, unpack, next
-local tasks, isrunning = {}, false
-local rate = 1 / 3 -- Queue execution rate. Assign a zero to execute at every tick.
+local tasks, toremove, isrunning, k = {}, {}, false
+local rate = 0
 
 local function RunNextTask()
-	local k = next(tasks)
+	local k = next(tasks, k)
 
-	if k == nil then
+	if data == nil then
 		isrunning = false
 		return
 	end
 
 	local data = tasks[k]
-	data.func(unpack(data.args))
+	
+	if toremove[data.name] ~= true then
+		data.func(unpack(data.args))
+	end
+
 	tasks[k] = nil
+
 	timer(rate, RunNextTask)
 end
 
@@ -46,11 +51,12 @@ function GetTable()
 end
 
 function Remove(name)
-	tasks[name] = nil
+	toremove[name] = true
 end
 
 function Create(name, f, ...)
-	tasks[name] = {
+	tasks[1 + #tasks] = {
+		name = name,
 		func = f,
 		args = {...}
 	}
