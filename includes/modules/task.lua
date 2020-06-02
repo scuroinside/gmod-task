@@ -34,7 +34,7 @@ local function RunNextTask()
 	end
 
 	local data = tasks[k]
-	
+
 	if toremove[data.name] ~= true then
 		data.func(unpack(data.args))
 	end
@@ -55,7 +55,8 @@ function Remove(name)
 end
 
 function Create(name, f, ...)
-	tasks[1 + #tasks] = {
+	local id = 1 + #tasks
+	tasks[id] = {
 		name = name,
 		func = f,
 		args = {...}
@@ -65,4 +66,6 @@ function Create(name, f, ...)
 		isrunning = true
 		timer(rate, RunNextTask)
 	end
+
+	return id
 end
