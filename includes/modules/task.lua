@@ -21,37 +21,41 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.]]
 
-local timer, unpack, next = timer.Simple, unpack, next
-local tasks, toremove, isrunning, k = {}, {}, false
-local rate = 0
+local timer, unpack, next, print = timer.Simple, unpack, next, print
+local tasks, isrunning, k = {}, false
+local rate = 1 / 16
+
+module('task', package.seeall)
 
 local function RunNextTask()
 	local k = next(tasks, k)
 
-	if data == nil then
+	if k == nil then
 		isrunning = false
 		return
 	end
 
 	local data = tasks[k]
-
-	if toremove[data.name] ~= true then
-		data.func(unpack(data.args))
-	end
-
+	data.func(unpack(data.args))
 	tasks[k] = nil
 
 	timer(rate, RunNextTask)
 end
-
-module('task', package.seeall)
 
 function GetTable()
 	return tasks
 end
 
 function Remove(name)
-	toremove[name] = true
+	for k, data in next, tasks do
+		if data.name == name then
+			tasks[k] = nil
+		end
+	end
+end
+
+function RemoveID(id)
+	tasks[id] = nil
 end
 
 function Create(name, f, ...)
