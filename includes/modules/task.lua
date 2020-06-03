@@ -21,9 +21,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.]]
 
-local timer, unpack, next, print = timer.Simple, unpack, next, print
+local timer, unpack, next = timer.Simple, unpack, next
 local tasks, isrunning, k = {}, false
-local rate = 1 / 16
+local rate = 0
 
 module('task', package.seeall)
 
