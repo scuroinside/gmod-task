@@ -22,13 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.]]
 
 local timer, unpack, next = timer.Simple, unpack, next
-local tasks, isrunning, k = {}, false
+local tasks, isrunning = {}, false
 local rate = 0
 
 module('task', package.seeall)
 
 local function RunNextTask()
-	local k = next(tasks, k)
+	local k = next(tasks)
 
 	if k == nil then
 		isrunning = false
