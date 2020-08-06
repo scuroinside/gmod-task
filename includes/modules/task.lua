@@ -21,55 +21,106 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.]]
 
-local timer, unpack, next = timer.Simple, unpack, next
-local tasks, isrunning = {}, false
-local rate = 0
+task = {}
+local timer, unpack, next, assert, isfunction = timer.Simple, unpack, next, assert, isfunction
+local rate = 1 / 16
 
-module('task', package.seeall)
+do
+	local tsks, rntsk = {}, false
 
-local function RunNextTask()
-	local k = next(tasks)
+	local function RunNextTask()
+		local k = next(tsks)
 
-	if k == nil then
-		isrunning = false
-		return
-	end
-
-	local data = tasks[k]
-	data.func(unpack(data.args))
-	tasks[k] = nil
-
-	timer(rate, RunNextTask)
-end
-
-function GetTable()
-	return tasks
-end
-
-function Remove(name)
-	for k, data in next, tasks do
-		if data.name == name then
-			tasks[k] = nil
+		if k == nil then
+			rntsk = false
+			return
 		end
-	end
-end
 
-function RemoveID(id)
-	tasks[id] = nil
-end
+		local data = tsks[k]
+		data.func(unpack(data.args))
+		tsks[k] = nil
 
-function Create(name, f, ...)
-	local id = 1 + #tasks
-	tasks[id] = {
-		name = name,
-		func = f,
-		args = {...}
-	}
-
-	if isrunning == false then
-		isrunning = true
 		timer(rate, RunNextTask)
 	end
 
-	return id
+	function task.GetTable()
+		return tasks
+	end
+
+	function task.Remove(name)
+		for k, data in next, tsks do
+			if data.name == name then
+				tsks[k] = nil
+			end
+		end
+	end
+
+	function task.RemoveID(id)
+		tsks[id] = nil
+	end
+
+	function task.Create(name, fn, ...)
+		assert(isfunction(fn) == true)
+		local id = 1 + #tsks
+		tsks[id] = {
+			name = name,
+			func = fn,
+			args = {...}
+		}
+
+		if rntsk == false then
+			rntsk = true
+			timer(rate, RunNextTask)
+		end
+
+		return id
+	end
+end
+
+do
+	local thrds, rnthrd, rmprv, k = {}, false
+
+	local function RunNextThread()
+		local lastk = k
+		k = next(thrds, k)
+
+		if rmprv == true and lastk ~= nil then
+			thrds[lastk] = nil
+		end
+
+		if k == nil then
+			k = next(thrds)
+
+			if k == nil then
+				rnthrd = false
+				return
+			end
+		end
+
+		local fn = thrds[k]
+		rmprv = fn()
+
+		timer(rate, RunNextThread)
+	end
+
+	function task.CreateThread(name, fn)
+		assert(isfunction(fn) == true)
+		thrds[name] = fn
+
+		if rnthrd == false then
+			rnthrd = true
+			timer(rate, RunNextThread)
+		end
+	end
+
+	function task.RemoveThread(name)
+		thrds[name] = nil
+		if next(thrds) == nil then
+			rnthrd = false
+		end
+	end
+
+	function task.GetThreadsTable()
+		return thrds
+	end
 end
