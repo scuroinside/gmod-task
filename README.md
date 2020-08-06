@@ -11,3 +11,7 @@ Deletes a task by index
 Deletes every task with given name
 ### task.GetTable()
 Returns a table with existing tasks
+### task.CreateThread(any_name, function_action)
+Creates new thread
+### task.RemoveThread(any_name)
+Deletes a thread by name
